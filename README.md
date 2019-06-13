@@ -263,6 +263,7 @@ TronGrid v3 (TG3) will use api versioning moving forward. As this is the first i
 - Params:
   - `id` The id of the transaction
 
+### ------
 
 ## TronWeb compatibility
 
