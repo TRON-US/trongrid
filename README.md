@@ -263,7 +263,11 @@ TronGrid v3 (TG3) will use api versioning moving forward. As this is the first i
 - Params:
   - `id` The id of the transaction
 
-## The Following are Four Methods for Polling:
+
+## TronWeb compatibility
+
+To keep compatibility with TronWeb, TronGrid supports also the legacy format.  
+The Following are Four Methods for Polling:
 
 ### 1. By Contract Address:<br>
 
