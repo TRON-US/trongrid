@@ -16,7 +16,10 @@ TronGrid v3 (TG3) will use api versioning moving forward. As this is the first i
 2. [Assets](#assets)
 3. [Blocks](#blocks)
 4. [Contracts](#contracts)
-5. [Transactions](#transactions)
+5. [Network](#network)
+6. [Proposals](#proposals)
+7. [Transactions](#transactions)
+8. [Witnesses](#witnesses)
 
 ### Parameters, Queries, & Return Values
 
@@ -140,6 +143,68 @@ TronGrid v3 (TG3) will use api versioning moving forward. As this is the first i
 
 ```
 
+#### 4. Create An Account
+
+- _POST_ https://api.trongrid.io/v1/accounts
+- JavaTron (JT) API: `/wallet/createaccount`
+- Usage:
+  - Creates the transaction for the creation of a new account starting from an existing account.
+- Payload:
+  - `creator` Address of the account creating the new account
+  - `address` Address of the new account
+
+#### 5. Update Account Name
+
+- _PUT_ https://api.trongrid.io/v1/accounts/:address
+- JavaTron (JT) API: `/wallet/updateaccount`
+- Usage:
+  - Returns the transaction to change the name of an account. It requires that the account exists.
+- Params:
+  - `address` The account’s address
+- Options:
+
+  - `only_confirmed` Shows only confirmed.
+    `true` | `false` default `false`
+  - `only_unconfirmed` Shows only unconfirmed.
+    `true` | `false` default `false`
+
+- Payload:
+  - `name` New name of the new account
+
+#### 6. Update Account Resources
+
+- _PUT_ https://api.trongrid.io/v1/accounts/:address/balances?action=
+- JavaTron (JT) API:
+  - `/wallet/freezebalance`
+  - `/wallet/unfreezebalance`
+- Usage:
+  - Returns the transaction to freeze a certain amount of TRX in the balance.
+- Params:
+  - `address` The account’s address
+- Options: (**required**)
+  - `action` The action to be performed.
+  - Example:
+    `action=freeze`
+    `action=unfreeze`
+- Payload:
+  - `amount` Amount to be frozen/unfrozen in SUN (**only freeze**)
+  - `duration` Duration of the freeze (**only freeze**)
+  - `resource` Requested resource
+    Accepted values:
+    `BANDWIDTH`
+    `ENERGY`
+  - `receiver_address` Address of the account receiving the bandwidth/energy, if any (**optional**)
+- ex: https://api.trongrid.io/v1/accounts/:address/balances?action=freeze
+
+#### 7. Withdraw Witnesses Rewards By Address
+
+- _POST_ https://api.trongrid.io/v1/accounts/:address/witnesses
+- JavaTron (JT) API: `/wallet/withdrawbalance`
+- Usage:
+  - Creates a transaction to allow witnesses to receive their SR rewards. Can be used once/24 hrs.
+- Params:
+  - `address` The address of the witness
+
 ### Assets
 
 #### 1. Get All Assets
@@ -193,6 +258,78 @@ TronGrid v3 (TG3) will use api versioning moving forward. As this is the first i
   - `only_confirmed` Shows only the situation at latest confirmed block.
     `true` | `false` default `false`
 
+#### 4. Create Asset By Owner
+
+- _POST_ https://api.trongrid.io/v1/assets
+- JavaTron (JT) API: `/wallet/createassetissue`
+- Usage:
+  - Creates the transaction for the creation of an asset from the owner. Right now, the TVM allows only one asset per account.
+- Payload:
+  - `owner` Issuer address
+  - `name` Name of the asset
+  - `abbr` Abbreviation of the asset
+  - `description` Description of the asset
+  - `url` Url of the entity who is selling the asset
+  - `total_supply` Total supply
+  - `trx_ratio` Initial ratio with TRX
+  - `token_ratio` Initial ratio
+  - `start_time` Starting sale time
+  - `end_time` Ending sale time
+  - `vote_score`:
+  - `free_asset_net_limit`:
+  - `public_free_asset_net_limit`:
+  - `frozen_amount` TRX frozen to create the asset
+  - `frozen_days` for how many days
+  - `precision` Decimals of the asset. For Trx10 in smart contracts.
+
+#### 5. Participate In Asset ICO
+
+- _POST_ https://api.trongrid.io/v1/assets/:id/sales
+- JavaTron (JT) API: `/wallet/participateassetissue`
+- Usage:
+  - Creates the transaction to purchase an asset during an ICO.
+- Params:
+  - `id` The token ID
+- Payload:
+  - `buyer` Address of the buyer of the asset
+  - `issuer` Address of the issuer of the asset
+  - `amount` Amount of assets to be purchased
+
+#### 6. Transfer An Asset
+
+- _POST_ https://api.trongrid.io/v1/assets/:id/transfers
+- JavaTron (JT) API: `/wallet/transferasset`
+- Usage:
+  - Creates the transaction to transfer an asset.
+- Params:
+  - `id` The token ID
+- Payload:
+  - `owner` Owner address
+  - `recipient` Address to which the token are send
+  - `amount` Amount of assets to be transferred
+
+#### 7. Freeze Or Unfreeze Asset
+
+- _PUT_ https://api.trongrid.io/v1/assets/:id?action=
+- JavaTron (JT) API:
+  - `/wallet/updateasset`
+  - `/wallet/unfreezeasset`
+- Usage:
+  - The update action returns the transaction to update an asset.
+  - The unfreeze action returns the transaction to Unfreeze the asset at the end of the ICO to make it tradable.
+- Params:
+  - `id` The asset ID
+  - `action` The action to performs.
+    Accepted values:
+    - `update`
+    - `unfreeze`
+- Payload (**only for update**):
+  - `owner` Issuer address
+  - `description` New description
+  - `url` New url
+  - `limit` New bandwidth limit
+  - `public_limit` New free bandwidth limit
+
 ### Blocks
 
 #### 1. Returns Events By Block Identifier
@@ -202,6 +339,34 @@ TronGrid v3 (TG3) will use api versioning moving forward. As this is the first i
   - Returns all the events in the specified block. Depending on the data, the entire block can be confirmed or unconfirmed.
 - Params:
   - `identifier` It can be either latest, a block number or a block id.
+
+#### 2. Returns Block Information By Identifier
+
+- _GET_ https://api.trongrid.io/v1/blocks/:identifier
+- Usage:
+  - Returns the block info with of a specified block.
+- Params:
+  - `identifier` It can be either 'latest', a block number,
+    - Example:
+      `6000000` or a block id, for example (for 6000000):
+      `00000000005b8d808efbb017b671ca00945a16fa909ef03f210f002ccf3a7719`
+- JavaTron (JT) API:
+  - `/wallet/getnowblock`
+  - `/wallet/getblockbyid`
+  - `/wallet/getblockbynum`
+
+#### 3. Get Blocks By Intervals
+
+- _GET_ https://api.trongrid.io/v1/blocks/:identifier1/:identifier2
+- JavaTron (JT) API: `/wallet/getblockbylimitnext`
+- Usage:
+  - Returns a certain number of blocks.
+- Params:
+  - `identifier1` It can be either a block number or a block id.
+  - `identifier2` It can be either a block number or a block id.
+- ex:
+  - https://api.trongrid.io/v1/blocks/50000/50010
+  - returns the blocks in the interval
 
 ### Contracts
 
@@ -253,6 +418,80 @@ TronGrid v3 (TG3) will use api versioning moving forward. As this is the first i
       `block_timestamp,asc` (alias: `timestamp,asc`)
       `block_timestamp,desc` (default)
 
+#### 3. Get Contract Information By Contract Address
+
+- _GET_ https://api.trongrid.io/v1/contracts/:address
+- JavaTron (JT) API: `/wallet/getcontract`
+- Usage:
+  - Returns the data of a deployed contract.
+- Params:
+
+  - `address` The address of the deployed contract (both hex or base58 format supported)
+
+#### 4. Update Contract
+
+- _PUT_ https://api.trongrid.io/v1/contracts/:address
+- JavaTron (JT) API:
+  - `/wallet/updateenergylimit`
+  - `/wallet/updatesetting`
+- Usage:
+  - If only one option is set, returns the transaction to be signed and broadcasted to update the specified option. If both options are set, it returns an array containing the two transactions.
+- Params:
+  - `address` The address of the deployed contract.
+- Options:
+  - `origin_energy_limit` The new energy limit of the contract
+  - `user_fee_percentage` The new fee percentage to be paid by the user
+- Payload:
+  - `sender` The address of the sender
+
+### Network
+
+#### 1. Get Network Information
+
+- _GET_ https://api.trongrid.io/v1/network
+- Usage:
+  - Returns general info about the network.
+- JavaTron (JT) API: `/wallet/getnodeinfo`
+
+#### 2. Get Current Network Parameters
+
+- _GET_ https://api.trongrid.io/v1/network/parameters
+- Usage:
+  - Returns the current parameters of the chain.
+- JavaTron (JT) API: `/wallet/getchainparameters`
+
+#### 3. Get Next Network Maintenance Tine
+
+- _GET_ https://api.trongrid.io/v1/network/next_maintenance
+- Usage:
+  - Returns the timestamp of the next net maintenance.
+- JavaTron (JT) API: `/wallet/getnextmaintenancetime`
+
+#### 4. List All Connected Nodes
+
+- _GET_ https://api.trongrid.io/v1/network/connected_nodes
+- JavaTron (JT) API: `/wallet/listnodes`
+- Usage:
+  - Returns the list of all the nodes connected to the TronGrid node.
+
+### Proposals
+
+#### 1. List All Proposals
+
+- _GET_ https://api.trongrid.io/v1/proposals
+- JavaTron (JT) API: `/wallet/listproposals`
+- Usage:
+  - Returns all the proposals currently in the network.
+
+#### 2. Get Proposal By ID
+
+- _GET_ https://api.trongrid.io/v1/proposals/:id
+- JavaTron (JT) API: `/wallet/getproposalbyid`
+- Usage:
+  - Returns a proposal by its ID.
+- Params:
+  - `id` The id of the proposal
+
 ### Transactions
 
 #### 1. Get Events By Transaction ID
@@ -263,12 +502,106 @@ TronGrid v3 (TG3) will use api versioning moving forward. As this is the first i
 - Params:
   - `id` The id of the transaction
 
+#### 2. Get Transactions By Block Number
+
+- _GET_ https://api.trongrid.io/v1/transactions?block_number=
+- Usage:
+  - Returns the number of transactions in a specific block.
+- JavaTron (JT) API: `/wallet/gettransactioncountbyblocknum`
+- Params:
+  - `block_number` The number of the block containing the transactions to be retrieved
+
+#### 3. Get Transaction By ID
+
+- _GET_ https://api.trongrid.io/v1/transactions/:id
+- JavaTron (JT) API: `/wallet/gettransactionbyid`
+- Usage:
+  - Returns a transaction by its ID.
+- Params:
+  - `id` The id of the transaction
+
+#### 4.Get Transaction Information By ID
+
+- _GET_ https://api.trongrid.io/v1/transactions/:id/info
+- JavaTron (JT) API: `/wallet/gettransactioninfobyid`
+- Usage:
+  - Returns the info related to a transaction by its ID.
+- Params:
+  - `id` The id of the transaction
+
+#### 5. Create Transfer Transaction
+
+- _POST_ https://api.trongrid.io/v1/transactions
+- JavaTron (JT) API: `/wallet/createtransaction`
+- Usage:
+  - Returns the transaction for a transfer of TRX from sender to recipient.
+- Payload:
+  - `sender` The address of the sender
+  - `recipient` The address of the recipient
+  - `amount` The amount of TRX to be sent, in SUN
+
+#### 6. Broadcast Signed Transaction
+
+- _POST_ https://api.trongrid.io/v1/transactions/broadcast
+- JavaTron (JT) API: `/wallet/broadcasttransaction`
+- Usage:
+  - Broadcasts the transaction to the network.
+- Payload:
+  - `id` The ID of the transaction
+  - `signature` The signature of the transaction
+  - `data` The raw data of the transaction, in JSON format
+
+### Witnesses
+
+#### 1. List All Witnesses
+
+- _GET_ https://api.trongrid.io/v1/witnesses
+- JavaTron (JT) API: `/wallet/listwitnesses`
+- Usage:
+  - Lists all the witnesses.
+
+#### 2. Create Witness
+
+- _POST_ https://api.trongrid.io/v1/witnesses
+- JavaTron (JT) API: `/wallet/createwitness`
+- Usage:
+  - Create a new witness.
+- Payload:
+  - `witness` The address of the witness
+  - `url` The url of the witness
+
+#### 3. Update Witness URL
+
+- _PUT_ https://api.trongrid.io/v1/witnesses/:address
+- JavaTron (JT) API: `/wallet/updatewitness`
+- Usage:
+  - Update the url of a witness.
+- Params:
+  - `address` The address of the witness
+- Payload:
+  - `url` The new url of the witness
+
+#### 4. Vote For Witness By Address
+
+- _POST_ https://api.trongrid.io/v1/witnesses/:address/votes
+- JavaTron (JT) API: `/wallet/votewitnessaccount`
+- Usage:
+  - Allow voter to vote for a specified witness.
+- Params:
+  - `address` The address of the witness
+- Payload:
+
+  - `voter` The address of the voter
+  - `amount` The number of votes
+
 ### ------
 
 ## TronWeb compatibility
 
 To keep compatibility with TronWeb, TronGrid supports also the legacy format.  
 The Following are Four Methods for Polling:
+
+## The Following are Four Methods for Polling:
 
 ### 1. By Contract Address:<br>
 
