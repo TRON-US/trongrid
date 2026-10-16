@@ -41,7 +41,7 @@ TronGrid v3 (TG3) will use api versioning moving forward. As this is the first i
 - Options:
   - `only_confirmed` Shows only the situation at latest confirmed block.
     `true` | `false` default `false`
-- ex: https://api.trongrid.io/v1/accounts/TLCuBEirVzB6V4menLZKw1jfBTFMZbuKq7only_confirmed=false
+- ex: https://api.trongrid.io/v1/accounts/TLCuBEirVzB6V4menLZKw1jfBTFMZbuKq7?only_confirmed=false
 - Return example:
 
 ```JSON
